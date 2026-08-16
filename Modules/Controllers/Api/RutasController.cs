@@ -3,7 +3,7 @@ using APTRA_Gestion_de_Reservas.Models.Rutas;
 using APTRA_Gestion_de_Reservas.Models.Rutas.DTOs;
 using APTRA_Gestion_de_Reservas.Persistence.Repositories;
 
-namespace APTRA_Gestion_de_Reservas.Modules.Rutas.Controllers.Api
+namespace APTRA_Gestion_de_Reservas.Modules.Controllers.Api
 {
     /// <summary>
     /// Controlador para la gestión de Rutas de transporte.
