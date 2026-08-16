@@ -13,6 +13,9 @@ La entidad `Ruta` representa las rutas de transporte disponibles en el sistema.
 - **Persistencia**: Centralizada en la carpeta `Persistence/`, utilizando `AptraDbContext`.
 - **Acceso a Datos**: Implementado a través del patrón Repositorio (`IRutaRepository` y `RutaRepository`), permitiendo abstracción e inyección de dependencias. Se encuentra en `Persistence/Repositories/`.
 
+## Seguridad y Configuración
+- **Cadenas de Conexión**: Por decisión de diseño y seguridad, las claves y cadenas de conexión a la base de datos (SQL Server) no se almacenan en el archivo `appsettings.json`. En su lugar, se utilizan **User Secrets** (`dotnet user-secrets`) durante el desarrollo para evitar la exposición accidental de credenciales en el control de versiones.
+
 ## Esquema
 | Campo | Tipo de Dato (C#) | Tipo de Dato (SQL) | Restricción |
 | --- | --- | --- | --- |

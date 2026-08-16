@@ -16,12 +16,10 @@ namespace APTRA_Gestion_de_Reservas.Persistence
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configuraciones adicionales con Fluent API
             modelBuilder.Entity<Ruta>(entity =>
             {
                 entity.ToTable("Rutas");
                 
-                // Aseguramos a nivel de base de datos que el precio debe ser positivo (SQL Server CHECK constraint)
                 entity.ToTable(t => t.HasCheckConstraint("CK_Ruta_PrecioPositivo", "[Precio] > 0"));
             });
         }
