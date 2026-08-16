@@ -1,7 +1,18 @@
+using Microsoft.EntityFrameworkCore;
+using APTRA_Gestion_de_Reservas.Persistence;
+using APTRA_Gestion_de_Reservas.Persistence.Repositories;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Configuración de Entity Framework Core
+builder.Services.AddDbContext<AptraDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Configuración de Inyección de Dependencias
+builder.Services.AddScoped<IRutaRepository, RutaRepository>();
 
 var app = builder.Build();
 
