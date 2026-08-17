@@ -91,8 +91,8 @@ namespace APTRA_Gestion_de_Reservas.Modules.Controllers.Api
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteTicket(int id)
         {
-            var ticket = await _ticketRepository.GetByIdAsync(id);
-            if (ticket == null)
+            var ticketExistente = await _ticketRepository.GetByIdAsync(id);
+            if (ticketExistente == null)
             {
                 return NotFound($"No se encontró el ticket con el ID {id}.");
             }
