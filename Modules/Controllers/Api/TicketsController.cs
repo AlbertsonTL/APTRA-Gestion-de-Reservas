@@ -78,5 +78,28 @@ namespace APTRA_Gestion_de_Reservas.Modules.Controllers.Api
 
             return Ok(dto);
         }
+
+        /// <summary>
+        /// Elimina un ticket existente.
+        /// </summary>
+        /// <param name="id">Identificador del ticket a eliminar.</param>
+        /// <returns>Respuesta sin contenido.</returns>
+        /// <response code="204">Si la eliminación fue exitosa.</response>
+        /// <response code="404">Si no existe el ticket especificado.</response>
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteTicket(int id)
+        {
+            var ticketExistente = await _ticketRepository.GetByIdAsync(id);
+            if (ticketExistente == null)
+            {
+                return NotFound($"No se encontró el ticket con el ID {id}.");
+            }
+
+            await _ticketRepository.DeleteAsync(id);
+
+            return NoContent();
+        }
     }
 }
