@@ -15,6 +15,7 @@ builder.Services.AddDbContext<AptraDbContext>(options =>
 
 // Configuración de Inyección de Dependencias
 builder.Services.AddScoped<IRutaRepository, RutaRepository>();
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.RegisterMapsterConfiguration();
 
 builder.Services.AddEndpointsApiExplorer();

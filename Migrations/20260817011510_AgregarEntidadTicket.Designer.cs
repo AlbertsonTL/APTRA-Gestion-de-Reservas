@@ -4,6 +4,7 @@ using APTRA_Gestion_de_Reservas.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APTRA_Gestion_de_Reservas.Migrations
 {
     [DbContext(typeof(AptraDbContext))]
-    partial class AptraDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260817011510_AgregarEntidadTicket")]
+    partial class AgregarEntidadTicket
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
