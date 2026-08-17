@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Mapster;
 using APTRA_Gestion_de_Reservas.Models.Rutas;
 using APTRA_Gestion_de_Reservas.Models.Rutas.DTOs;
 using APTRA_Gestion_de_Reservas.Persistence.Repositories;
@@ -40,14 +41,7 @@ namespace APTRA_Gestion_de_Reservas.Modules.Controllers.Api
                 return BadRequest(ModelState);
             }
 
-            var nuevaRuta = new Ruta
-            {
-                Nombre = dto.Nombre,
-                Origen = dto.Origen,
-                Destino = dto.Destino,
-                Precio = dto.Precio,
-                Estado = dto.Estado
-            };
+            var nuevaRuta = dto.Adapt<Ruta>();
 
             await _rutaRepository.AddAsync(nuevaRuta);
 

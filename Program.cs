@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using APTRA_Gestion_de_Reservas.Persistence;
 using APTRA_Gestion_de_Reservas.Persistence.Repositories;
+using APTRA_Gestion_de_Reservas.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,7 @@ builder.Services.AddDbContext<AptraDbContext>(options =>
 
 // Configuración de Inyección de Dependencias
 builder.Services.AddScoped<IRutaRepository, RutaRepository>();
+builder.Services.RegisterMapsterConfiguration();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
