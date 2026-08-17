@@ -16,7 +16,7 @@ namespace APTRA_Gestion_de_Reservas.Persistence.Repositories
         {
             var totalRecords = await _context.Tickets.CountAsync();
             var items = await _context.Tickets
-                .Include(t => t.Ruta) // Hacemos el Join/Populate
+                .Include(t => t.Ruta)
                 .OrderBy(t => t.Id)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
