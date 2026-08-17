@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using APTRA_Gestion_de_Reservas.Persistence;
 using APTRA_Gestion_de_Reservas.Persistence.Repositories;
 using APTRA_Gestion_de_Reservas.Mappings;
-using APTRA_Gestion_de_Reservas.Modules.Common.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
