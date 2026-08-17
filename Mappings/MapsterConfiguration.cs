@@ -9,9 +9,6 @@ namespace APTRA_Gestion_de_Reservas.Mappings
     {
         public static void RegisterMapsterConfiguration(this IServiceCollection services)
         {
-            // Configuración global de Mapster (opcional, ya que Mapster mapea automáticamente propiedades con el mismo nombre)
-            // Aquí podemos agregar reglas personalizadas en el futuro si los DTOs y Entidades difieren.
-            
             TypeAdapterConfig<RutaCreateDto, Ruta>
                 .NewConfig()
                 .IgnoreNullValues(true);
