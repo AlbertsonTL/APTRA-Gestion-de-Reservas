@@ -1,0 +1,207 @@
+@{
+    ViewData["Title"] = "Tickets";
+}
+
+<div class="soft-shell">
+    <div class="page-header">
+        <h2>Tickets emitidos</h2>
+        <div class="module-actions" style="align-items:center; gap:0.8rem;">
+            <select class="form-select" id="ticket-filter" style="width:180px;">
+                <option value="all">Todos</option>
+                <option value="active">Activos</option>
+                <option value="used">Usados</option>
+            </select>
+            <a class="btn-soft btn-secondary-soft" asp-controller="Administracion" asp-action="Index">Volver a rutas</a>
+        </div>
+    </div>
+
+    <section class="soft-card" style="padding:1.5rem;">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Pasajero</th>
+                        <th>Documento</th>
+                        <th>Ruta</th>
+                        <th>Precio</th>
+                        <th>Fecha viaje</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tickets-body">
+                    <tr>
+                        <td colspan="8" class="empty-state">Cargando tickets...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div class="text-muted" id="ticket-meta">Mostrando 0 resultados</div>
+            <div class="btn-group" id="ticket-pagination" role="group" aria-label="Paginación tickets"></div>
+        </div>
+    </section>
+</div>
+
+<div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+@section Scripts {
+    <script>
+        const ticketsBody = document.getElementById('tickets-body');
+        const ticketFilter = document.getElementById('ticket-filter');
+        const ticketPagination = document.getElementById('ticket-pagination');
+        const ticketMeta = document.getElementById('ticket-meta');
+
+        const ticketState = { page: 1, pageSize: 5, filter: 'all' };
+
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast-box';
+            toast.textContent = message;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 200);
+            }, 2600);
+        }
+
+        function formatMoney(value) {
+            return new Intl.NumberFormat('es-DO', { style: 'currency', currency: 'DOP' }).format(value || 0);
+        }
+
+        function formatDate(value) {
+            if (!value) return '—';
+            const date = new Date(value);
+            return isNaN(date) ? value : date.toLocaleDateString('es-DO', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        function renderTicketPagination(totalRecords) {
+            const totalPages = Math.max(1, Math.ceil(totalRecords / ticketState.pageSize));
+            ticketPagination.innerHTML = '';
+
+            const prev = document.createElement('button');
+            prev.type = 'button';
+            prev.className = 'btn-soft btn-secondary-soft';
+            prev.textContent = 'Anterior';
+            prev.disabled = ticketState.page === 1;
+            prev.addEventListener('click', () => {
+                if (ticketState.page > 1) {
+                    ticketState.page -= 1;
+                    loadTickets();
+                }
+            });
+            ticketPagination.appendChild(prev);
+
+            const pageLabel = document.createElement('span');
+            pageLabel.className = 'btn-soft btn-secondary-soft';
+            pageLabel.style.cursor = 'default';
+            pageLabel.textContent = `Página ${ticketState.page} / ${totalPages}`;
+            ticketPagination.appendChild(pageLabel);
+
+            const next = document.createElement('button');
+            next.type = 'button';
+            next.className = 'btn-soft btn-primary-soft';
+            next.textContent = 'Siguiente';
+            next.disabled = ticketState.page >= totalPages;
+            next.addEventListener('click', () => {
+                if (ticketState.page < totalPages) {
+                    ticketState.page += 1;
+                    loadTickets();
+                }
+            });
+            ticketPagination.appendChild(next);
+        }
+
+        async function loadTickets() {
+            try {
+                const response = await fetch(`/api/tickets?pageNumber=${ticketState.page}&pageSize=${ticketState.pageSize}`);
+                if (!response.ok) throw new Error('No se pudieron cargar los tickets');
+                const data = await response.json();
+                const items = data.data || data.items || [];
+
+                const filtered = items.filter((ticket) => {
+                    if (ticketState.filter === 'active') return ticket.estado === 'Active';
+                    if (ticketState.filter === 'used') return ticket.estado === 'Used';
+                    return true;
+                });
+
+                if (!filtered.length) {
+                    ticketsBody.innerHTML = '<tr><td colspan="8" class="empty-state">No hay tickets registrados para este filtro.</td></tr>';
+                    ticketMeta.textContent = 'Mostrando 0 resultados';
+                    renderTicketPagination(0);
+                    return;
+                }
+
+                ticketMeta.textContent = `Mostrando ${filtered.length} resultado${filtered.length > 1 ? 's' : ''}`;
+                ticketsBody.innerHTML = filtered.map((ticket) => `
+                    <tr>
+                        <td>${ticket.codigoValidacion}</td>
+                        <td>${ticket.pasajero}</td>
+                        <td>${ticket.documento}</td>
+                        <td>${ticket.ruta ? ticket.ruta.nombre : 'Sin ruta'}</td>
+                        <td>${formatMoney(ticket.precio)}</td>
+                        <td>${formatDate(ticket.fechaViaje)}</td>
+                        <td><span class="status-badge ${ticket.estado === 'Used' ? 'status-used' : 'status-active'}">${ticket.estado === 'Used' ? 'Usado' : 'Activo'}</span></td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn-icon success" data-action="validate" data-id="${ticket.id}" ${ticket.estado === 'Used' ? 'disabled' : ''}>Validar</button>
+                                <button class="btn-icon danger" data-action="delete" data-id="${ticket.id}">Eliminar</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+
+                ticketsBody.querySelectorAll('[data-action="validate"]').forEach((button) => {
+                    button.addEventListener('click', () => validateTicket(button.dataset.id));
+                });
+
+                ticketsBody.querySelectorAll('[data-action="delete"]').forEach((button) => {
+                    button.addEventListener('click', () => deleteTicket(button.dataset.id));
+                });
+
+                renderTicketPagination(data.totalRecords || filtered.length);
+            } catch (error) {
+                ticketsBody.innerHTML = '<tr><td colspan="8" class="empty-state">' + error.message + '</td></tr>';
+            }
+        }
+
+        async function validateTicket(id) {
+            try {
+                const response = await fetch(`/api/tickets/${id}/validar`, { method: 'PUT' });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'No se pudo validar el ticket');
+                }
+                showToast('Ticket validado');
+                await loadTickets();
+            } catch (error) {
+                showToast(error.message);
+            }
+        }
+
+        async function deleteTicket(id) {
+            if (!confirm('¿Deseas eliminar este ticket?')) return;
+
+            try {
+                const response = await fetch(`/api/tickets/${id}`, { method: 'DELETE' });
+                if (!response.ok) throw new Error('No se pudo eliminar el ticket');
+                showToast('Ticket eliminado');
+                await loadTickets();
+            } catch (error) {
+                showToast(error.message);
+            }
+        }
+
+        ticketFilter.addEventListener('change', (event) => {
+            ticketState.filter = event.target.value;
+            ticketState.page = 1;
+            loadTickets();
+        });
+
+        loadTickets();
+    </script>
+}

@@ -7,6 +7,11 @@ namespace APTRA_Gestion_de_Reservas.Modules.Common.DTOs
     public class PagedResponse<T>
     {
         public IEnumerable<T> Data { get; set; } = new List<T>();
+        public IEnumerable<T> Items
+        {
+            get => Data;
+            set => Data = value;
+        }
         public int PageNumber { get; set; }
         public int PageSize { get; set; }
         public int TotalRecords { get; set; }

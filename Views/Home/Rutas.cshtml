@@ -1,0 +1,273 @@
+@{
+    ViewData["Title"] = "Rutas";
+}
+
+<section class="rutas-page">
+    <div class="module-header">
+        <div>
+            <span class="eyebrow">Administración</span>
+            <h2>Rutas de Bus</h2>
+        </div>
+        <button class="btn-soft primary" type="button" data-bs-toggle="modal" data-bs-target="#rutaModal" id="btnNuevaRuta">
+            + Nueva Ruta
+        </button>
+    </div>
+
+    <div class="toolbar">
+        <a asp-controller="Home" asp-action="Administracion" class="btn-soft">⬅ Volver</a>
+        <div class="text-muted small" id="rutaSummary">Cargando rutas...</div>
+    </div>
+
+    <div class="table-panel">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Origen</th>
+                    <th>Destino</th>
+                    <th>Precio</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaRutas">
+                <tr>
+                    <td colspan="6" class="empty-state">Cargando rutas...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="modal fade modal-soft" id="rutaModal" tabindex="-1" aria-labelledby="rutaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-soft">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rutaModalLabel">Nueva Ruta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="rutaForm" class="form-soft">
+                    <input type="hidden" id="rutaId" />
+
+                    <div class="form-grid">
+                        <div>
+                            <label class="form-label">Nombre</label>
+                            <input class="input-soft" id="rutaNombre" name="Nombre" type="text" required />
+                        </div>
+                        <div>
+                            <label class="form-label">Origen</label>
+                            <input class="input-soft" id="rutaOrigen" name="Origen" type="text" required />
+                        </div>
+                        <div>
+                            <label class="form-label">Destino</label>
+                            <input class="input-soft" id="rutaDestino" name="Destino" type="text" required />
+                        </div>
+                        <div>
+                            <label class="form-label">Precio</label>
+                            <input class="input-soft" id="rutaPrecio" name="Precio" type="number" min="0.01" step="0.01" required />
+                        </div>
+                    </div>
+
+                    <label class="form-check-soft">
+                        <input id="rutaEstado" type="checkbox" checked />
+                        <span>Ruta activa</span>
+                    </label>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-soft" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn-soft primary" form="rutaForm">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const apiBase = '/api/rutas';
+        const tabla = document.getElementById('tablaRutas');
+        const rutaSummary = document.getElementById('rutaSummary');
+        const modalEl = document.getElementById('rutaModal');
+        const form = document.getElementById('rutaForm');
+        const modalTitle = document.getElementById('rutaModalLabel');
+        const rutaIdInput = document.getElementById('rutaId');
+        const rutaNombre = document.getElementById('rutaNombre');
+        const rutaOrigen = document.getElementById('rutaOrigen');
+        const rutaDestino = document.getElementById('rutaDestino');
+        const rutaPrecio = document.getElementById('rutaPrecio');
+        const rutaEstado = document.getElementById('rutaEstado');
+
+        function formatPrice(value) {
+            return new Intl.NumberFormat('es-DO', {
+                style: 'currency',
+                currency: 'DOP'
+            }).format(value);
+        }
+
+        function renderEmptyState(message) {
+            tabla.innerHTML = `
+                <tr>
+                    <td colspan="6" class="empty-state">${message}</td>
+                </tr>
+            `;
+        }
+
+        function renderRutas(rutas) {
+            if (!rutas || rutas.length === 0) {
+                renderEmptyState('No hay rutas registradas aún.');
+                rutaSummary.textContent = '0 rutas registradas';
+                return;
+            }
+
+            rutaSummary.textContent = `${rutas.length} ruta(s) registrada(s)`;
+
+            tabla.innerHTML = rutas.map(ruta => `
+                <tr>
+                    <td>${ruta.nombre}</td>
+                    <td>${ruta.origen}</td>
+                    <td>${ruta.destino}</td>
+                    <td>${formatPrice(ruta.precio)}</td>
+                    <td>
+                        <span class="status-pill ${ruta.estado ? 'active' : 'inactive'}">
+                            ${ruta.estado ? 'Activa' : 'Inactiva'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-group">
+                            <button class="action-btn edit" type="button" data-edit-id="${ruta.id}">Editar</button>
+                            <button class="action-btn delete" type="button" data-delete-id="${ruta.id}">Eliminar</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            document.querySelectorAll('[data-edit-id]').forEach(button => {
+                button.addEventListener('click', () => openEditModal(Number(button.dataset.editId)));
+            });
+
+            document.querySelectorAll('[data-delete-id]').forEach(button => {
+                button.addEventListener('click', () => deleteRuta(Number(button.dataset.deleteId)));
+            });
+        }
+
+        async function fetchRutas() {
+            try {
+                const response = await fetch(apiBase);
+                if (!response.ok) throw new Error('No se pudieron cargar las rutas.');
+                const data = await response.json();
+                const rutas = data.data || data;
+                renderRutas(rutas);
+            } catch (error) {
+                renderEmptyState(error.message || 'Error al cargar rutas.');
+                rutaSummary.textContent = 'No se pudieron cargar las rutas';
+            }
+        }
+
+        function openCreateModal() {
+            modalTitle.textContent = 'Nueva Ruta';
+            rutaIdInput.value = '';
+            form.reset();
+            rutaEstado.checked = true;
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+
+        async function openEditModal(id) {
+            try {
+                const response = await fetch(`${apiBase}`);
+                if (!response.ok) throw new Error('Error al buscar la ruta');
+                const data = await response.json();
+                const rutas = data.data || data;
+                const ruta = rutas.find(item => item.id === id);
+
+                if (!ruta) {
+                    alert('No se encontró la ruta solicitada.');
+                    return;
+                }
+
+                modalTitle.textContent = 'Editar Ruta';
+                rutaIdInput.value = ruta.id;
+                rutaNombre.value = ruta.nombre;
+                rutaOrigen.value = ruta.origen;
+                rutaDestino.value = ruta.destino;
+                rutaPrecio.value = ruta.precio;
+                rutaEstado.checked = ruta.estado;
+
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            } catch (error) {
+                alert(error.message || 'No se pudo abrir la ruta para editar.');
+            }
+        }
+
+        async function submitRuta(event) {
+            event.preventDefault();
+
+            const payload = {
+                nombre: rutaNombre.value.trim(),
+                origen: rutaOrigen.value.trim(),
+                destino: rutaDestino.value.trim(),
+                precio: Number(rutaPrecio.value),
+                estado: rutaEstado.checked
+            };
+
+            if (!payload.nombre || !payload.origen || !payload.destino || !payload.precio || payload.precio <= 0) {
+                alert('Todos los campos son obligatorios y el precio debe ser mayor a cero.');
+                return;
+            }
+
+            const url = rutaIdInput.value ? `${apiBase}/${rutaIdInput.value}` : apiBase;
+            const method = rutaIdInput.value ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'No se pudo guardar la ruta.');
+                }
+
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+
+                form.reset();
+                rutaEstado.checked = true;
+                await fetchRutas();
+            } catch (error) {
+                alert(error.message || 'Ocurrió un error al guardar la ruta.');
+            }
+        }
+
+        async function deleteRuta(id) {
+            const confirmDelete = confirm('¿Desea eliminar esta ruta?');
+            if (!confirmDelete) return;
+
+            try {
+                const response = await fetch(`${apiBase}/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'No se pudo eliminar la ruta.');
+                }
+
+                await fetchRutas();
+            } catch (error) {
+                alert(error.message || 'No se pudo eliminar la ruta.');
+            }
+        }
+
+        document.getElementById('btnNuevaRuta').addEventListener('click', openCreateModal);
+        form.addEventListener('submit', submitRuta);
+
+        fetchRutas();
+    </script>
+}

@@ -18,6 +18,16 @@ public class HomeController : Controller
         return View();
     }
 
+    public IActionResult Administracion()
+    {
+        return RedirectToAction("Index", "Administracion");
+    }
+
+    public IActionResult Cajero()
+    {
+        return RedirectToAction("Index", "Cajero");
+    }
+
     public IActionResult Privacy()
     {
         return View();
