@@ -121,6 +121,7 @@ En entorno `Development`, la app abre automáticamente en **Swagger UI** (`/swag
 |---|---|---|
 | `GET` | `/api/tickets?pageNumber=&pageSize=` | Lista tickets paginados (con la ruta asociada incluida) |
 | `PUT` | `/api/tickets/{id}/validar` | Cambia el estado del ticket de `Active` a `Used` |
+| `DELETE` | `/api/tickets/{id}` | Elimina un ticket |
 
 Todos los endpoints devuelven códigos HTTP estándar (`200`, `201`, `204`, `400`, `404`, `409`) y mensajes de error descriptivos. El detalle completo de request/response está documentado vía comentarios XML y visible directamente en Swagger.
 
