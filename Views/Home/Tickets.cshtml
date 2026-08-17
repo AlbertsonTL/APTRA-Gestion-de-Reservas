@@ -1,0 +1,178 @@
+@{
+    ViewData["Title"] = "Tickets Emitidos";
+}
+
+<section class="rutas-page">
+    <div class="module-header">
+        <div>
+            <span class="eyebrow">Administración</span>
+            <h2>Tickets Emitidos</h2>
+        </div>
+        <a asp-controller="Home" asp-action="Administracion" class="btn-soft">⬅ Volver</a>
+    </div>
+
+    <div class="toolbar">
+        <div class="text-muted small" id="ticketSummary">Cargando tickets...</div>
+    </div>
+
+    <div class="table-panel">
+        <table class="data-table ticket-table">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Pasajero</th>
+                    <th>Documento</th>
+                    <th>Ruta</th>
+                    <th>Trayecto</th>
+                    <th>Precio</th>
+                    <th>Fecha Viaje</th>
+                    <th>Fecha Emisión</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaTickets">
+                <tr>
+                    <td colspan="10" class="empty-state">Cargando tickets...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        const ticketsApi = '/api/tickets';
+        const tablaTickets = document.getElementById('tablaTickets');
+        const ticketSummary = document.getElementById('ticketSummary');
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('es-DO', {
+                style: 'currency',
+                currency: 'DOP'
+            }).format(value);
+        }
+
+        function formatDate(dateValue) {
+            if (!dateValue) return '—';
+            const date = new Date(dateValue);
+            return date.toLocaleDateString('es-DO', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        function renderEmptyState(message) {
+            tablaTickets.innerHTML = `
+                <tr>
+                    <td colspan="10" class="empty-state">${message}</td>
+                </tr>
+            `;
+        }
+
+        function renderTickets(tickets) {
+            if (!tickets || tickets.length === 0) {
+                renderEmptyState('No hay tickets registrados.');
+                ticketSummary.textContent = '0 tickets';
+                return;
+            }
+
+            ticketSummary.textContent = `${tickets.length} ticket(s) registrado(s)`;
+
+            tablaTickets.innerHTML = tickets.map(ticket => {
+                const estado = (ticket.estado || '').toLowerCase();
+                const estadoLabel = estado === 'used' ? 'Usado' : 'Activo';
+                const rutaNombre = ticket.ruta ? `${ticket.ruta.origen} → ${ticket.ruta.destino}` : '—';
+                const trayecto = ticket.trayecto || rutaNombre;
+
+                return `
+                    <tr>
+                        <td>${ticket.codigoValidacion || '—'}</td>
+                        <td>${ticket.pasajero || '—'}</td>
+                        <td>${ticket.documento || '—'}</td>
+                        <td>${ticket.ruta?.nombre || '—'}</td>
+                        <td>${trayecto}</td>
+                        <td>${formatCurrency(ticket.precio || 0)}</td>
+                        <td>${formatDate(ticket.fechaViaje)}</td>
+                        <td>${formatDate(ticket.fechaEmision)}</td>
+                        <td>
+                            <span class="status-pill ${estado === 'used' ? 'used' : 'active'}">
+                                ${estadoLabel}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-group">
+                                <button class="action-btn edit" type="button" data-validar-id="${ticket.id}" ${estado === 'used' ? 'disabled' : ''}>
+                                    Validar
+                                </button>
+                                <button class="action-btn delete" type="button" data-delete-id="${ticket.id}">Eliminar</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            document.querySelectorAll('[data-validar-id]').forEach(button => {
+                button.addEventListener('click', () => validarTicket(Number(button.dataset.validarId)));
+            });
+
+            document.querySelectorAll('[data-delete-id]').forEach(button => {
+                button.addEventListener('click', () => eliminarTicket(Number(button.dataset.deleteId)));
+            });
+        }
+
+        async function fetchTickets() {
+            try {
+                const response = await fetch(ticketsApi);
+                if (!response.ok) throw new Error('No se pudieron cargar los tickets.');
+                const data = await response.json();
+                const tickets = data.data || data;
+                renderTickets(tickets);
+            } catch (error) {
+                renderEmptyState(error.message || 'Error al cargar tickets.');
+                ticketSummary.textContent = 'No se pudieron cargar los tickets';
+            }
+        }
+
+        async function validarTicket(id) {
+            if (!confirm('¿Desea validar este ticket?')) return;
+
+            try {
+                const response = await fetch(`${ticketsApi}/${id}/validar`, {
+                    method: 'PUT'
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(text || 'No se pudo validar el ticket.');
+                }
+
+                await fetchTickets();
+            } catch (error) {
+                alert(error.message || 'No se pudo validar el ticket.');
+            }
+        }
+
+        async function eliminarTicket(id) {
+            if (!confirm('¿Desea eliminar este ticket?')) return;
+
+            try {
+                const response = await fetch(`${ticketsApi}/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(text || 'No se pudo eliminar el ticket.');
+                }
+
+                await fetchTickets();
+            } catch (error) {
+                alert(error.message || 'No se pudo eliminar el ticket.');
+            }
+        }
+
+        fetchTickets();
+    </script>
+}

@@ -1,0 +1,57 @@
+@{
+    ViewData["Title"] = "Administración";
+}
+
+<section class="module-shell">
+    <div class="module-header">
+        <div>
+            <span class="eyebrow">Panel administrativo</span>
+            <h2>Administración</h2>
+        </div>
+        <span class="badge bg-primary-subtle text-primary-emphasis">Rol: Administrador</span>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="stat-card">
+            <span class="label">Rutas activas</span>
+            <strong>18</strong>
+        </div>
+        <div class="stat-card">
+            <span class="label">Tickets emitidos</span>
+            <strong>96</strong>
+        </div>
+        <div class="stat-card">
+            <span class="label">Tickets usados</span>
+            <strong>34</strong>
+        </div>
+        <div class="stat-card">
+            <span class="label">Pendientes</span>
+            <strong>12</strong>
+        </div>
+    </div>
+
+    <div class="panel-box">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Módulos</h4>
+            <a asp-controller="Home" asp-action="Index" class="btn-soft">Volver</a>
+        </div>
+
+        <div class="role-options">
+            <a asp-controller="Home" asp-action="Rutas" class="role-option role-admin">
+                <span class="icon">🚌</span>
+                <span class="text">
+                    <strong>Rutas</strong>
+                    <small>Crear, editar y eliminar rutas</small>
+                </span>
+            </a>
+
+            <a asp-controller="Home" asp-action="Tickets" class="role-option role-admin">
+                <span class="icon">🎫</span>
+                <span class="text">
+                    <strong>Tickets</strong>
+                    <small>Visualizar y validar tickets emitidos</small>
+                </span>
+            </a>
+        </div>
+    </div>
+</section>

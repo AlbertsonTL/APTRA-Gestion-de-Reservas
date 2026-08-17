@@ -1,0 +1,57 @@
+@{
+    ViewData["Title"] = "Cajero";
+}
+
+<section class="module-shell">
+    <div class="module-header">
+        <div>
+            <span class="eyebrow">Panel de caja</span>
+            <h2>Módulo de Cajero</h2>
+        </div>
+        <span class="badge bg-success-subtle text-success-emphasis">Rol: Cajero</span>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="stat-card">
+            <span class="label">Ventas hoy</span>
+            <strong>24</strong>
+        </div>
+        <div class="stat-card">
+            <span class="label">Cobros realizados</span>
+            <strong>RD$ 18,450</strong>
+        </div>
+        <div class="stat-card">
+            <span class="label">Tickets activos</span>
+            <strong>15</strong>
+        </div>
+        <div class="stat-card">
+            <span class="label">Rutas disponibles</span>
+            <strong>9</strong>
+        </div>
+    </div>
+
+    <div class="panel-box">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Acciones rápidas</h4>
+            <a asp-controller="Home" asp-action="Index" class="btn-soft">Volver</a>
+        </div>
+
+        <div class="role-options">
+            <a href="#" class="role-option role-cashier">
+                <span class="icon">🧾</span>
+                <span class="text">
+                    <strong>Venta</strong>
+                    <small>Emitir y gestionar tickets</small>
+                </span>
+            </a>
+
+            <a href="#" class="role-option role-cashier">
+                <span class="icon">🔍</span>
+                <span class="text">
+                    <strong>Consulta</strong>
+                    <small>Ver disponibilidad y validar ventas</small>
+                </span>
+            </a>
+        </div>
+    </div>
+</section>
