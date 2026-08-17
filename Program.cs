@@ -41,6 +41,13 @@ else
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    // Carga de datos de prueba (solo en Development, idempotente).
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AptraDbContext>();
+        await DataSeeder.SeedAsync(db);
+    }
 }
 
 app.UseHttpsRedirection();
