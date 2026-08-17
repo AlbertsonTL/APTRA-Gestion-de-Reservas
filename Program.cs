@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using APTRA_Gestion_de_Reservas.Persistence;
 using APTRA_Gestion_de_Reservas.Persistence.Repositories;
 using APTRA_Gestion_de_Reservas.Mappings;
+using APTRA_Gestion_de_Reservas.Modules.Common.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,9 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+// Middleware global de manejo de excepciones
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

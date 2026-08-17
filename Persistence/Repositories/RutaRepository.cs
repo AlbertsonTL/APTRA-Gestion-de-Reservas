@@ -17,6 +17,18 @@ namespace APTRA_Gestion_de_Reservas.Persistence.Repositories
             return await _context.Rutas.ToListAsync();
         }
 
+        public async Task<(IEnumerable<Ruta> Items, int TotalRecords)> GetPagedAsync(int pageNumber, int pageSize)
+        {
+            var totalRecords = await _context.Rutas.CountAsync();
+            var items = await _context.Rutas
+                .OrderBy(r => r.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalRecords);
+        }
+
         public async Task<Ruta?> GetByIdAsync(int id)
         {
             return await _context.Rutas.FindAsync(id);
