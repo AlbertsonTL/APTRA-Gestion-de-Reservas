@@ -51,6 +51,19 @@ APTRA-Gestion-de-Reservas/
 - **Validaciones en dos niveles**: Data Annotations en las entidades/DTOs (`[Required]`, `[Range]`) a nivel de aplicación, y `CHECK constraints` / índices únicos vía Fluent API (`AptraDbContext.OnModelCreating`) a nivel de base de datos (ej. `Precio > 0` en Rutas, `CodigoValidacion` único en Tickets).
 - **Secretos fuera del control de versiones**: la cadena de conexión a SQL Server no está en `appsettings.json`; se maneja con `dotnet user-secrets` en desarrollo.
 
+## Datos de prueba (seed data)
+
+Para facilitar el testing manual y de integración, el proyecto incluye un `DataSeeder` (`Persistence/DataSeeder.cs`) que carga datos de ejemplo automáticamente al iniciar la aplicación **en entorno Development**:
+
+- **6 rutas** con orígenes/destinos variados (5 activas, 1 inactiva) para poder probar filtros de estado.
+- **8 tickets** distribuidos entre varias rutas, con una mezcla de estados `Active` y `Used`, y fechas de viaje/emisión tanto pasadas como futuras — útil para probar la validación (`PUT /api/tickets/{id}/validar`, que debe rechazar los que ya están en `Used`) y la eliminación (`DELETE /api/tickets/{id}`).
+
+El seeder es **idempotente**: verifica si ya existen registros en `Rutas` o `Tickets` antes de insertar, por lo que es seguro reiniciar la aplicación varias veces sin duplicar datos.
+
+Se ejecuta automáticamente al correr `dotnet run` en Development, después de aplicar las migraciones (paso 3 más abajo). No requiere ningún comando adicional.
+
+> Si en algún momento quieres partir de una base vacía, simplemente elimina la base de datos (`dotnet ef database drop`) y vuelve a aplicar las migraciones (`dotnet ef database update`); el seeder volverá a poblarla en el siguiente arranque.
+
 ## Requisitos previos
 
 - [.NET SDK 9.0](https://dotnet.microsoft.com/download/dotnet/9.0)
